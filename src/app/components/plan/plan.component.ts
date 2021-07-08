@@ -21,7 +21,7 @@ export class PlanComponent implements OnInit  {
     this.currentDayDate = new Date()
     this.currentDayDate.setHours(0, 0, 0, 0)
 
-    this.http.get<Day[]>("http://localhost:3000/participants").subscribe(participants => {
+    this.http.get<Day[]>("https://schichtplanserver.klimacamp-ka.de/participants").subscribe(participants => {
       this.participants = participants
     })
   }
@@ -46,7 +46,7 @@ export class PlanComponent implements OnInit  {
 
     // @ts-ignore
     this.getParticipants(dayDateTime)[shiftIndex].push(element.value)
-    this.http.post<any>("http://localhost:3000/participants", {
+    this.http.post<any>("https://schichtplanserver.klimacamp-ka.de/participants/participants", {
       dayDateTime, shiftIndex, name: element.value
     }).subscribe(participants => {
       this.participants = participants
@@ -60,7 +60,7 @@ export class PlanComponent implements OnInit  {
 
   removeParticipant(dayDateTime: number, shiftIndex: number, participant: string) {
     if (confirm(participant + " wirklich entfernen?")) {
-      this.http.delete<any>("http://localhost:3000/participants/" + dayDateTime + "/" + shiftIndex + "/" +
+      this.http.delete<any>("https://schichtplanserver.klimacamp-ka.de/participants/participants/" + dayDateTime + "/" + shiftIndex + "/" +
         encodeURIComponent(participant)).subscribe(participants => {
         this.participants = participants
       })

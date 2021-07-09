@@ -12,7 +12,7 @@ import {Day} from "../../datatypes/Day";
 export class PlanComponent implements OnInit  {
   currentDayDate: Date;
   days: number[] = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-  shifts: string[] = ["07 - 10 Uhr", "13 - 16 Uhr", "16 - 19 Uhr", "19 - 22 Uhr", "22 - 07 Uhr",
+  shifts: string[] = ["07 - 10 Uhr", "10 - 13 Uhr", "13 - 16 Uhr", "16 - 19 Uhr", "19 - 22 Uhr", "22 - 07 Uhr",
     "Nachtschicht: 22 - 02 Uhr", "Nachtschicht: 02 - 04 Uhr", "Nachtschicht: 04 - 07 Uhr"]
   weekdays: string[] = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
   participants: Day[] = []

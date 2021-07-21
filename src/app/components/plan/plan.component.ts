@@ -10,6 +10,8 @@ import {Day} from "../../datatypes/Day";
   styleUrls: ['./plan.component.css']
 })
 export class PlanComponent implements OnInit  {
+  serverUrl: string;
+  ws: WebSocket;
   currentDayDate: Date;
   shifts: string[] = ["07 - 10 Uhr", "10 - 13 Uhr", "13 - 16 Uhr", "16 - 19 Uhr", "19 - 22 Uhr", "22 - 07 Uhr",
     "Nachtschicht: 22 - 02 Uhr", "Nachtschicht: 02 - 04 Uhr", "Nachtschicht: 04 - 07 Uhr"]
@@ -17,12 +19,46 @@ export class PlanComponent implements OnInit  {
   participants: Day[] = []
 
   constructor(private http: HttpClient) {
+    if (location.host.indexOf("localhost") >= 0) {
+      this.serverUrl = "ws://localhost:3000"
+    } else {
+      const locationParts = location.host.split(".")
+      locationParts[0] = locationParts[0] + "server";
+      this.serverUrl = "wss://" + locationParts.join(".")
+    }
+
     this.currentDayDate = new Date()
     this.currentDayDate.setHours(0, 0, 0, 0)
 
-    this.http.get<Day[]>("https://schichtplanserver.klimacamp-ka.de/participants").subscribe(participants => {
-      this.participants = participants
+    this.ws = new WebSocket(this.serverUrl)
+    this.ws.addEventListener("message", data => {
+      try {
+        const message = JSON.parse(data.data)
+
+        switch (message.type) {
+          case "LIST":
+            this.participants = message.participants
+            break
+          case "ADD":
+            // @ts-ignore
+            this.getParticipants(message.dayDateTime)[message.shiftIndex].push(message.name)
+            break
+          case "DELETE":
+            const dayParticipants = this.getParticipants(message.dayDateTime)
+            // @ts-ignore
+            const index = dayParticipants[message.shiftIndex].indexOf(message.name);
+            if (index !== -1) {
+              // @ts-ignore
+              dayParticipants[message.shiftIndex].splice(index, 1);
+            }
+            break
+        }
+      } catch (e) { }
     })
+
+    /*this.http.get<Day[]>(this.serverUrl + "/participants").subscribe(participants => {
+      this.participants = participants
+    })*/
   }
 
   ngOnInit(): void {
@@ -45,11 +81,8 @@ export class PlanComponent implements OnInit  {
 
     // @ts-ignore
     this.getParticipants(dayDateTime)[shiftIndex].push(element.value)
-    this.http.post<any>("https://schichtplanserver.klimacamp-ka.de/participants", {
-      dayDateTime, shiftIndex, name: element.value
-    }).subscribe(participants => {
-      this.participants = participants
-    })
+
+    this.ws.send(JSON.stringify({type: "ADD", dayDateTime, shiftIndex, name: element.value}))
 
     element.value = ""
   }
@@ -61,10 +94,15 @@ export class PlanComponent implements OnInit  {
 
   removeParticipant(dayDateTime: number, shiftIndex: number, participant: string) {
     if (confirm(participant + " wirklich entfernen?")) {
-      this.http.delete<any>("https://schichtplanserver.klimacamp-ka.de/participants/" + dayDateTime + "/" + shiftIndex + "/" +
-        encodeURIComponent(participant)).subscribe(participants => {
-        this.participants = participants
-      })
+      this.ws.send(JSON.stringify({type: "DELETE", dayDateTime, shiftIndex, name: participant}))
+
+      const dayParticipants = this.getParticipants(dayDateTime)
+      // @ts-ignore
+      const index = dayParticipants[shiftIndex].indexOf(participant);
+      if (index !== -1) {
+        // @ts-ignore
+        dayParticipants[shiftIndex].splice(index, 1);
+      }
     }
   }
 

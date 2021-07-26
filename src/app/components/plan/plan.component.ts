@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import {formatDate} from "@angular/common";
-import { HttpClient } from '@angular/common/http';
 import {Day} from "../../datatypes/Day";
 
 
@@ -10,15 +9,18 @@ import {Day} from "../../datatypes/Day";
   styleUrls: ['./plan.component.css']
 })
 export class PlanComponent implements OnInit  {
+  serverStatus: number = 0;
+  remainingTime: number = 0;
+  countdownTimeout: number = 0;
   serverUrl: string;
-  ws: WebSocket;
+  ws!: WebSocket;
   currentDayDate: Date;
   shifts: string[] = ["07 - 10 Uhr", "10 - 13 Uhr", "13 - 16 Uhr", "16 - 19 Uhr", "19 - 22 Uhr", "22 - 07 Uhr",
     "Nachtschicht: 22 - 02 Uhr", "Nachtschicht: 02 - 04 Uhr", "Nachtschicht: 04 - 07 Uhr"]
   weekdays: string[] = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
   participants: Day[] = []
 
-  constructor(private http: HttpClient) {
+  constructor() {
     if (location.host.indexOf("localhost") >= 0) {
       this.serverUrl = "ws://localhost:3000"
     } else {
@@ -30,7 +32,24 @@ export class PlanComponent implements OnInit  {
     this.currentDayDate = new Date()
     this.currentDayDate.setHours(0, 0, 0, 0)
 
+    this.initSocketConnection()
+  }
+
+  ngOnInit(): void {
+  }
+
+  initSocketConnection(): void {
+    this.serverStatus = 0
+
     this.ws = new WebSocket(this.serverUrl)
+    this.ws.addEventListener("open", () => {
+      this.serverStatus = 1
+    })
+    this.ws.addEventListener("error", () => {
+      this.serverStatus = -1
+      this.remainingTime = 6
+      this.updateCountdown()
+    })
     this.ws.addEventListener("message", data => {
       try {
         const message = JSON.parse(data.data)
@@ -55,13 +74,16 @@ export class PlanComponent implements OnInit  {
         }
       } catch (e) { }
     })
-
-    /*this.http.get<Day[]>(this.serverUrl + "/participants").subscribe(participants => {
-      this.participants = participants
-    })*/
   }
 
-  ngOnInit(): void {
+  updateCountdown() {
+    if (--this.remainingTime <= 0) {
+      this.initSocketConnection()
+    } else {
+      this.countdownTimeout = setTimeout(() => {
+        this.updateCountdown()
+      }, 1000)
+    }
   }
 
   getDayTitle(dayDateTime: number) {

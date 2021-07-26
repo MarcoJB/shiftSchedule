@@ -1,33 +1,42 @@
-<div class="day" *ngFor="let day of participants">
-  <mat-card class="dayTitle">
-    <mat-card-title>{{getDayTitle(day.dayDateTime)}}</mat-card-title>
-  </mat-card>
-  <div class="dayShifts">
-    <mat-card class="dayShift" *ngFor="let shift of day.participants; index as shiftIndex">
-      <mat-card-title>{{shifts[shiftIndex]}}</mat-card-title>
-      <hr>
-      <mat-card-content>
-        <mat-list>
-          <mat-list-item *ngFor="let participant of shift">
-            <div class="participant">
-              <mat-icon mat-list-icon>person</mat-icon>
-              <div class="name">{{participant}}</div>
-              <button mat-icon-button (click)="removeParticipant(day.dayDateTime, shiftIndex, participant)">
-                <mat-icon>delete_forever</mat-icon>
-              </button>
-            </div>
-          </mat-list-item>
-          <mat-list-item>
-            <form class="newParticipantForm" (submit)="addParticipantForm(day.dayDateTime, shiftIndex, $event.target)">
-              <mat-icon mat-list-icon>group_add</mat-icon>
-              <mat-form-field class="example-full-width">
-                <input matInput placeholder="Neue Person" (blur)="addParticipant(day.dayDateTime, shiftIndex,
-                $event.target)">
-              </mat-form-field>
-            </form>
-          </mat-list-item>
-        </mat-list>
-      </mat-card-content>
+<div id="shiftschedule" *ngIf="serverStatus==1">
+  <div class="day" *ngFor="let day of participants">
+    <mat-card class="dayTitle">
+      <mat-card-title>{{getDayTitle(day.dayDateTime)}}</mat-card-title>
     </mat-card>
+    <div class="dayShifts">
+      <mat-card class="dayShift" *ngFor="let shift of day.participants; index as shiftIndex">
+        <mat-card-title>{{shifts[shiftIndex]}}</mat-card-title>
+        <hr>
+        <mat-card-content>
+          <mat-list>
+            <mat-list-item *ngFor="let participant of shift">
+              <div class="participant">
+                <mat-icon mat-list-icon>person</mat-icon>
+                <div class="name">{{participant}}</div>
+                <button mat-icon-button (click)="removeParticipant(day.dayDateTime, shiftIndex, participant)">
+                  <mat-icon>delete_forever</mat-icon>
+                </button>
+              </div>
+            </mat-list-item>
+            <mat-list-item>
+              <form class="newParticipantForm" (submit)="addParticipantForm(day.dayDateTime, shiftIndex, $event.target)">
+                <mat-icon mat-list-icon>group_add</mat-icon>
+                <mat-form-field class="example-full-width">
+                  <input matInput placeholder="Neue Person" (blur)="addParticipant(day.dayDateTime, shiftIndex,
+                  $event.target)">
+                </mat-form-field>
+              </form>
+            </mat-list-item>
+          </mat-list>
+        </mat-card-content>
+      </mat-card>
+    </div>
   </div>
+</div>
+<div class="serverStatus" *ngIf="serverStatus==0">
+  Verbindung zum Server wird aufgebaut...
+</div>
+<div class="serverStatus" *ngIf="serverStatus==-1">
+  Verbindung zum Server nicht möglich.<br><br>
+  Neuer Versuch in {{remainingTime}}
 </div>

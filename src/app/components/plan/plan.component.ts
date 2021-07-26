@@ -59,7 +59,7 @@ export class PlanComponent implements OnInit  {
             this.participants = message.participants
             setTimeout(() => {
               // @ts-ignore
-              document.querySelector("#shiftschedule").scrollLeft=260
+              document.querySelector("#shiftschedule").scrollLeft=300
             })
             break
           case "ADD":

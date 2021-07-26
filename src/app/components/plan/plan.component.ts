@@ -50,6 +50,11 @@ export class PlanComponent implements OnInit  {
       this.remainingTime = 6
       this.updateCountdown()
     })
+    this.ws.addEventListener("close", () => {
+      this.serverStatus = -1
+      this.remainingTime = 6
+      this.updateCountdown()
+    })
     this.ws.addEventListener("message", data => {
       try {
         const message = JSON.parse(data.data)

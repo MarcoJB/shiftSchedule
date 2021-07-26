@@ -57,6 +57,10 @@ export class PlanComponent implements OnInit  {
         switch (message.type) {
           case "LIST":
             this.participants = message.participants
+            setTimeout(() => {
+              // @ts-ignore
+              document.querySelector("#shiftschedule").scrollLeft=260
+            })
             break
           case "ADD":
             // @ts-ignore
